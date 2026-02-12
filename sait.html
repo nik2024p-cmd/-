@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>pablo.love78 · соцсети</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #000000; /* абсолютно чёрный */
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ----- ФИОЛЕТОВЫЕ ЧАСТИЦЫ (canvas) ----- */
+    #particles-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none; /* не мешают кликать по кнопкам */
+    }
+
+    /* ----- ОСНОВНАЯ КАРТОЧКА ----- */
+    .card {
+      position: relative;
+      z-index: 20;
+      max-width: 600px;
+      width: 100%;
+      background: rgba(10, 10, 15, 0.65);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(160, 130, 255, 0.25);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(170, 0, 255, 0.1) inset;
+      border-radius: 48px;
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    /* ----- АВАТАР (ТВОЯ ФОТКА) ----- */
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid rgba(180, 130, 255, 0.7);
+      box-shadow: 0 0 30px #9f4bff, 0 0 15px #6b2eb3;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease;
+      background-color: #1a0f2a; /* на случай, если фото не загрузится */
+    }
+    .avatar:hover {
+      transform: scale(1.02);
+      border-color: #cc88ff;
+      box-shadow: 0 0 40px #b266ff;
+    }
+
+    /* ----- НИКНЕЙМ (НЕ ОБЯЗАТЕЛЬНО, НО КРАСИВО) ----- */
+    .display-name {
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 0 15px #b266ff, 0 0 30px #7a2be0;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    /* ----- СЕТКА КНОПОК 2x2 ----- */
+    .links-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      width: 100%;
+      margin: 30px 0 25px;
+    }
+
+    /* ----- СТИЛЬ КАРТОЧЕК СОЦСЕТЕЙ ----- */
+    .social-item {
+      background: rgba(20, 15, 35, 0.7);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border: 1px solid rgba(200, 160, 255, 0.3);
+      border-radius: 24px;
+      padding: 18px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s;
+      cursor: pointer;
+      text-decoration: none;
+      color: white;
+      box-shadow: 0 8px 0 rgba(0, 0, 0, 0.4);
+    }
+    .social-item:hover {
+      background: rgba(70, 30, 120, 0.6);
+      border-color: #c97bff;
+      box-shadow: 0 0 25px #b242fa, 0 8px 0 #2a0a3a;
+      transform: translateY(-2px);
+    }
+
+    /* иконки (сделаны на CSS для чистоты) */
+    .icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 0 8px #a64dff);
+    }
+    .social-name {
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .username {
+      font-size: 14px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 6px 14px;
+      border-radius: 100px;
+      border: 1px solid rgba(255, 200, 255, 0.3);
+      color: #e2d1ff;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ----- ОСОБЫЙ СТИЛЬ ДЛЯ "скоро" ----- */
+    .soon-item {
+      background: rgba(10, 8, 20, 0.8);
+      border: 1px dashed rgba(200, 130, 255, 0.6);
+      cursor: default;
+      opacity: 0.9;
+    }
+    .soon-item:hover {
+      background: rgba(30, 20, 50, 0.8);
+      border-color: #b87aff;
+      box-shadow: 0 0 20px #6a3b9a;
+      transform: none;
+    }
+    .soon-question {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: #d9b3ff;
+      text-shadow: 0 0 10px #aa80ff;
+    }
+    .soon-label {
+      font-size: 22px;
+      font-weight: 700;
+      color: #cfb3ff;
+      letter-spacing: 4px;
+      background: rgba(0,0,0,0.3);
+      padding: 4px 16px;
+      border-radius: 40px;
+      border: 1px solid #b266ff;
+      margin-bottom: 8px;
+    }
+    .extra-text {
+      font-size: 12px;
+      color: #bc9aff;
+      text-transform: uppercase;
+    }
+
+    /* ----- КНОПКА ВЫБОРА ТЫ ИЛИ ПК ----- */
+    .device-switch {
+      margin-top: 15px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .device-btn {
+      background: linear-gradient(145deg, #1e0f2e, #14081f);
+      border: 1px solid #a64dff;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      padding: 16px 30px;
+      border-radius: 60px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 0 30px rgba(150, 0, 255, 0.4);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(200, 130, 255, 0.6);
+      transition: 0.2s;
+      cursor: pointer;
+      width: 100%;
+      justify-content: center;
+      letter-spacing: 2px;
+    }
+    .device-btn:hover {
+      background: #2e1a47;
+      border-color: #e699ff;
+      box-shadow: 0 0 45px #bf7aff;
+      transform: scale(1.01);
+    }
+    .device-btn span {
+      font-size: 26px;
+    }
+
+    /* подвал */
+    .footer-note {
+      margin-top: 24px;
+      color: rgba(200, 180, 255, 0.5);
+      font-size: 13px;
+      text-align: center;
+      width: 100%;
+      border-top: 1px solid rgba(170, 0, 255, 0.2);
+      padding-top: 20px;
+      font-weight: 400;
+    }
+
+    /* адаптация */
+    @media (max-width: 480px) {
+      .card { padding: 26px 18px; }
+      .links-grid { gap: 12px; }
+      .icon { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Холст для фиолетовых частиц (абсолютно чёрный фон уже у body, рисуем светящиеся точки) -->
+  <canvas id="particles-canvas"></canvas>
+
+  <!-- Основная карточка -->
+  <div class="card">
+
+    <!-- ТВОЯ АВАТАРКА (загружена с i.postimg.cc) -->
+    <img 
+      class="avatar" 
+      src="https://i.postimg.cc/yYqgrPp8/f6a5a0b0a27d33ffd335a6576aaaad9a.jpg" 
+      alt="аватар pablo.love78"
+      loading="lazy"
+      onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22200%22%20viewBox%3D%220%200%20200%20200%22%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22100%22%20r%3D%22100%22%20fill%3D%22%236a2b9e%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22white%22%20font-size%3D%2230%22%20font-family%3D%22Inter%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E';"
+    >
+
+    <!-- Имя или ник (можешь поменять) -->
+    <div class="display-name">pablo.love78</div>
+
+    <!-- Сетка соцсетей 2x2 -->
+    <div class="links-grid">
+
+      <!-- 1. ТИКТОК (ссылка) -->
+      <a href="https://tiktok.com/@pablo.love78" target="_blank" rel="noopener noreferrer" class="social-item">
+        <div class="icon">🎵</div>
+        <div class="social-name">TikTok</div>
+        <div class="username">@pablo.love78</div>
+      </a>
+
+      <!-- 2. ТЕЛЕГРАМ (ссылка) -->
+      <a href="https://t.me/DaneckaMolosec" target="_blank" rel="noopener noreferrer" class="social-item">
+        <div class="icon">📱</div>
+        <div class="social-name">Telegram</div>
+        <div class="username">@DaneckaMolosec</div>
+      </a>
+
+      <!-- 3. ДИСКОРД (ссылка) -->
+      <a href="https://discord.com/users/war_tuc" target="_blank" rel="noopener noreferrer" class="social-item">
+        <div class="icon">💬</div>
+        <div class="social-name">Discord</div>
+        <div class="username">@war_tuc</div>
+      </a>
+
+      <!-- 4. СКОРО (знак вопроса + soon) -->
+      <div class="social-item soon-item">
+        <div class="soon-question">❓</div>
+        <div class="soon-label">SOON</div>
+        <div class="extra-text">четвёртая сеть</div>
+      </div>
+
+    </div>
+
+    <!-- КНОПКА ВЫБОРА: ТЫ или ПК -->
+    <div class="device-switch">
+      <button class="device-btn" id="deviceButton">
+        <span id="deviceIcon">📱</span>
+        <span id="deviceText">Ты с телефона</span>
+        <span style="font-size:20px; margin-left:6px;">🖥️</span>
+      </button>
+    </div>
+
+    <!-- маленький футер -->
+    <div class="footer-note">
+      ✦ нажми на кнопку — выбери девайс ✦
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // ----------------------------------------------------
+      // 1. ФИОЛЕТОВЫЕ ЧАСТИЦЫ НА ЧЁРНОМ ФОНЕ
+      // ----------------------------------------------------
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let particles = [];
+
+      function initParticles() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        const particleCount = Math.min(120, Math.floor(width * height / 6000));
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+          particles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            radius: Math.random() * 3 + 1.2,
+            speedX: (Math.random() - 0.5) * 0.35,
+            speedY: (Math.random() - 0.5) * 0.25,
+            color: `rgba(${180 + Math.floor(Math.random() * 75)}, ${100 + Math.floor(Math.random() * 80)}, 255, ${Math.random() * 0.6 + 0.3})`,
+            glow: Math.random() * 0.8 + 0.4
+          });
+        }
+      }
+
+      function drawParticles() {
+        ctx.clearRect(0, 0, width, height);
+        
+        // полностью чёрный фон уже у body, но для уверенности:
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, width, height);
+
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          
+          // фиолетовое свечение
+          ctx.shadowColor = '#b266ff';
+          ctx.shadowBlur = p.glow * 12;
+          
+          ctx.fillStyle = p.color;
+          ctx.fill();
+          
+          // двигаем
+          p.x += p.speedX;
+          p.y += p.speedY;
+
+          // границы
+          if (p.x < 0) p.x = width;
+          if (p.x > width) p.x = 0;
+          if (p.y < 0) p.y = height;
+          if (p.y > height) p.y = 0;
+        });
+
+        requestAnimationFrame(drawParticles);
+      }
+
+      window.addEventListener('resize', () => {
+        initParticles();
+      });
+
+      initParticles();
+      drawParticles();
+
+      // ----------------------------------------------------
+      // 2. КНОПКА "ТЫ С ТЕЛЕФОНА / ТЫ С ПК"
+      // ----------------------------------------------------
+      const deviceBtn = document.getElementById('deviceButton');
+      const deviceIcon = document.getElementById('deviceIcon');
+      const deviceText = document.getElementById('deviceText');
+
+      let isPhone = true; // по умолчанию телефон
+
+      deviceBtn.addEventListener('click', function() {
+        if (isPhone) {
+          // переключаем на ПК
+          deviceIcon.textContent = '🖥️';
+          deviceText.textContent = 'Ты с ПК';
+          isPhone = false;
+        } else {
+          // обратно на телефон
+          deviceIcon.textContent = '📱';
+          deviceText.textContent = 'Ты с телефона';
+          isPhone = true;
+        }
+        
+        // маленькая пульсация при клике
+        deviceBtn.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+          deviceBtn.style.transform = 'scale(1)';
+        }, 120);
+      });
+
+    })();
+  </script>
+
+  <!-- Если вдруг картинка не прогрузится, есть запасной эмоджи-аватар (уже в onerror) -->
+
+</body>
+</html>
